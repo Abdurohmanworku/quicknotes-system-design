@@ -168,7 +168,28 @@ async function createNote(event) {
     setBusy(false);
   }
 }
+// ===== Task 3: DELETE (remove a note) =====
+async function deleteNote(note) {
+  setStatus("Deleting note...", "loading");
+  setBusy(true);
 
+  try {
+    const result = await request(`${API_URL}/${note.id}`, { method: "DELETE" });
+
+    // Remove only this exact note (see the comment at the top of the file).
+    notes = notes.filter(function (item) {
+      return item !== note;
+    });
+    renderNotes();
+
+    setStatus(`Note deleted (status ${result.status}).`, "success");
+  } catch (error) {
+    console.error(error);
+    setStatus("Sorry, the note could not be deleted. Please try again.", "error");
+  } finally {
+    setBusy(false);
+  }
+}
 // ---------- Events and start ----------
 loadBtn.addEventListener("click", loadNotes);
 noteForm.addEventListener("submit", createNote);
