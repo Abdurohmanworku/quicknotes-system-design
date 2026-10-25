@@ -124,7 +124,50 @@ async function loadNotes() {
   }
 }
 // ---------- Creating and deleting notes ----------
+// ===== Task 2: POST (create a note) =====
+async function createNote(event) {
+  event.preventDefault();
 
+  // Validation: title required, max 100 characters. Body is optional.
+  const title = titleInput.value.trim();
+  const body = bodyInput.value.trim();
+
+  if (title === "") {
+    setStatus("Please enter a title.", "error");
+    return;
+  }
+  if (title.length > MAX_TITLE_LENGTH) {
+    setStatus(`The title must be ${MAX_TITLE_LENGTH} characters or fewer.`, "error");
+    return;
+  }
+
+  setStatus("Creating note...", "loading");
+  setBusy(true);
+
+  try {
+    const result = await request(API_URL, {
+      method: "POST",
+      body: JSON.stringify({ title: title, body: body, userId: 1 }),
+    });
+
+    // Add the note returned by the server to the TOP of the list.
+    notes.unshift({
+      id: result.data.id,
+      title: result.data.title,
+      body: result.data.body,
+      userId: result.data.userId,
+    });
+    renderNotes();
+
+    noteForm.reset();
+    setStatus(`Note created (status ${result.status}, id ${result.data.id}).`, "success");
+  } catch (error) {
+    console.error(error);
+    setStatus("Sorry, the note could not be created. Please try again.", "error");
+  } finally {
+    setBusy(false);
+  }
+}
 
 // ---------- Events and start ----------
 loadBtn.addEventListener("click", loadNotes);
